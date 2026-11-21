@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "generator": "meshy text-to-3d v2 (preview -> refine), meshopt + webp via gltf-transform",
+  "characters": {},
+  "last_run": {
+    "at": "2026-11-21T00:08:54Z",
+    "results": {
+      "kit": "failed: HTTP 401 creating preview task: {\"message\":\"Invalid API key\"}",
+      "wing": "skipped after auth/billing failure",
+      "jasmine": "skipped after auth/billing failure",
+      "fong": "skipped after auth/billing failure"
+    }
+  }
+}

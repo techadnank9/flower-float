@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "characters": {
+    "wing": {
+      "url": "/models/test/missing.glb"
+    },
+    "fong": {
+      "url": "/models/test/corrupt.glb"
+    },
+    "kit": {
+      "url": "/models/test/kit-block.glb"
+    }
+  }
+}

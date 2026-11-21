@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "characters": {
+    "kit": {
+      "url": "/models/test/kit-block.glb"
+    },
+    "fong": {
+      "url": "/models/test/fong-block.glb"
+    }
+  }
+}

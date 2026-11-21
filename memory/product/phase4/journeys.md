@@ -1,0 +1,56 @@
+# Phase 4 Journeys: Jasmine, Auntie Fong and the Parade
+
+All earlier journeys stay valid except where superseded.
+
+- **JRN-72**
+  - superseded: [JRN-9]
+  - steps: In a fresh run, click "Curry Up", then "Back to harbour", then Fong's truck.
+  - expected: Each truck opens its own level. The camera flies in about 1 s and the owner greets the player (spoken, with subtitles). No "help Uncle Wing first" lock remains.
+- **JRN-73**
+  - steps: Talk to Jasmine with small talk only for 3 turns, then ask her budget, colours, goal and what she hates.
+  - expected: Small talk reveals nothing. Then her notebook fills HK$1500 / pinks and oranges / photo-worthy + edible garnish / old-fashioned. Replies are fast-talking and trendy, 1–2 sentences with a Cantonese word, spoken in a young upbeat female voice.
+- **JRN-74**
+  - steps: Talk to Auntie Fong and ask her budget, the occasion, what she wants and what to avoid.
+  - expected: Her notebook fills HK$1000 / 20th anniversary, a traditional congratulation stand with ribbon, flowers lasting a week / no strong scents. She calls the player "dear" and speaks in a warm older female voice.
+- **JRN-75**
+  - steps: Ask Jasmine about her Instagram or how she started. Ask Auntie Fong about her 20 years or her regulars.
+  - expected: Trust rises (shown later on each score card). The Crowd meter is higher than in a no-Trust run, and the final reaction is warmer.
+- **JRN-76**
+  - steps: Place a Yellow chrysanthemum on Jasmine's truck. Place a Lily on Auntie Fong's truck.
+  - expected: Jasmine immediately complains it looks old-fashioned. Auntie Fong immediately complains the scent will ruin her tea. Both lines are spoken.
+- **JRN-77**
+  - steps: After telling Auntie Fong's level about her 20 years, place the Congratulation stand in her stand slot.
+  - expected: Within about 4 s a ribbon message appears on the stand in 2 short lines that mention 20 years and fit the stand. The same message shows on her receipt.
+- **JRN-78**
+  - steps: Force fallback and place the stand on Fong's truck.
+  - expected: The ribbon shows "Congratulations on 20 Years! 二十週年 生意興隆" with no error.
+- **JRN-79**
+  - steps: Jasmine good run: pink/orange/edible/modern flowers including Nasturtium and pansy mix, within HK$1500, no chrysanthemum or stand, survive the storm (replace the fragile ones in the 20 s).
+  - expected: 3 stars. The five lines and a receipt with the correct total and a delivery slot appear.
+- **JRN-80**
+  - steps: Auntie Fong good run: Congratulation stand plus long-lasting traditional flowers, within HK$1000, no Lily, survive the storm.
+  - expected: 3 stars. The receipt includes the stand with its ribbon message.
+- **JRN-81**
+  - steps: Auntie Fong run with no stand but otherwise good.
+  - expected: "Needs matched" is lower than the good run and the stars do not exceed 2.
+- **JRN-82**
+  - steps: Taboo or overspend on Jasmine and on Fong.
+  - expected: Each costs one star versus the same run without it, with the matching line marked failed. Never fewer than 1 star.
+- **JRN-83**
+  - steps: Finish Wing, then Jasmine, then refresh mid-Fong-Arrange and resume.
+  - expected: Wing's and Jasmine's trucks stay decorated with their stars. Fong's level resumes with the same notebook, conversation and flowers. Each owner's intel cards are their own.
+- **JRN-84**
+  - steps: Finish all three trucks and close the last score card.
+  - expected: Night falls, all three trucks light up and roll along the harbour in a parade with the flower cart, fireworks burst over the skyline, and a "Skip" button is visible.
+- **JRN-85**
+  - steps: Let the parade finish, or click "Skip".
+  - expected: The final score panel shows stars for each truck, the total stars out of 9, the total spend in HKD, and the "Share your float" and "Play again" buttons.
+- **JRN-86**
+  - steps: Click "Share your float".
+  - expected: A PNG of the 3D parade scene downloads. It is not blank or black. Where the browser supports file sharing, the share sheet is offered too. (interpreted)
+- **JRN-87**
+  - steps: Refresh on the final score panel, then click "Play again".
+  - expected: After the refresh the final score panel returns. "Play again" clears the save and shows the start screen. (interpreted)
+- **JRN-88**
+  - steps: Ask the market for Wing, Jasmine and Fong in turn (force fallback).
+  - expected: The offline festival card shows an upcoming festival by today's date, never a past one.

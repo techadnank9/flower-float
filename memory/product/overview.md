@@ -57,8 +57,9 @@ A fully 3D, story-driven browser game set on the West Kowloon harbourfront at du
 
 ## Phases
 - **Phase 1 (MVP): 3D world + Uncle Wing level end to end** → the full harbourfront scene, camera moves, Kit tutorial, and Uncle Wing's complete level: Meet → Talk (chips + text, Claude Fable 5.2) → Research (seeded offline intel) → Arrange → Storm → Reveal with stars and receipt. Saved in the browser. F-1…F-26, F-37.
-  - [phase1/requirement.md](phase1/requirement.md) · [phase1/journeys.md](phase1/journeys.md)
+  - [phase1/requirement.md](phase1/requirement.md) · [phase1/journeys.md](phase1/journeys.md). Status: built and tested, 12/12 passed.
 - **Phase 2: Voices and mic** → ElevenLabs owner voices, talking animation, subtitles, mic input with waveform, spoken name. F-27, F-28, F-29.
+  - [phase2/requirement.md](phase2/requirement.md) · [phase2/journeys.md](phase2/journeys.md)
 - **Phase 3: Live market research** → You.com Market Intel replaces the offline cards (seeded fallback kept) and drives flower stats. F-30, F-31.
 - **Phase 4: Jasmine, Auntie Fong and the parade** → two more levels plus the finale. F-32, F-33, F-34.
 - **Phase 5: Meshy characters and polish** → Meshy GLB characters, SFX, music toggle, overall polish. F-35, F-36.
@@ -80,6 +81,8 @@ A fully 3D, story-driven browser game set on the West Kowloon harbourfront at du
 | Browser Web Speech API | mic input | none (Chrome/Edge) | 2 | text box and chips |
 | You.com Web Search API, `POST https://ydc-index.io/v1/search`, header `X-API-Key` (confirm against https://you.com/docs/openapi.json) | live Market Intel | user's `YDC_API_KEY` | 3 | seeded offline intel cards |
 | Meshy text-to-3D (`/openapi/v2/text-to-3d`, preview → refine → GLB), run once at build time | character models | user's `MESHY_API_KEY` (optional) | 5 | primitive low-poly characters |
+
+**Deviation:** The Emergent LLM proxy rejects `claude-fable-5-2`, so dialogue runs on `claude-fable-5-1` (the closest Fable version), set via the env var DIALOGUE_MODEL. It switches back to 5.2 once that model is supported.
 
 The user confirmed they have ElevenLabs, You.com and Meshy keys. Each is requested through a secure form when its phase starts.
 

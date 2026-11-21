@@ -1,0 +1,43 @@
+# Phase 5 Journeys: Meshy Characters, Sound and Polish
+
+All earlier journeys stay valid.
+
+- **JRN-89**
+  - steps: Inspect the repo for the Meshy build script and the character manifest. Run the script with the current (placeholder) key.
+  - expected: The script exists, calls only the Meshy text-to-3D API (preview → refine → GLB), and logs a clear failure for the invalid key. The manifest marks no character as generated, and the game still shows primitive characters with no errors.
+- **JRN-90**
+  - steps: Search the frontend bundle and runtime network traffic for Meshy API calls.
+  - expected: There are no calls to api.meshy.ai at runtime, only local static GLB requests if the manifest lists any.
+- **JRN-91**
+  - steps: Point the manifest at a GLB that is missing or corrupt for one character and load the game.
+  - expected: That character renders as its primitive version, the others are unaffected, and there are no visible errors.
+- **JRN-92**
+  - steps: If any GLB is present: view the harbour and the truck close-ups.
+  - expected: The GLB characters stand on the ground at truck scale, idle-animate (wave or weight shift) and bob while talking. Each file is ≤2 MB.
+- **JRN-93**
+  - steps: Place a flower, fly to a truck, run the storm to the last 5 s of the countdown, and reach the score card.
+  - expected: You hear a pop on placement, a whoosh on the fly, an alert on each signal banner, wind and rain during the storm, ticks in the final 5 seconds, and a cash-register chime on the score card. (human for the ear check, tester checks the sound triggers)
+- **JRN-94**
+  - steps: Enter the harbour after "Open the stall".
+  - expected: Background music starts looping. A music toggle and a sound-effects toggle are visible in the HUD.
+- **JRN-95**
+  - steps: Turn music off, turn sound effects off, refresh and resume.
+  - expected: Music stops when toggled off and sound effects stop when toggled off. After the refresh both remain off.
+- **JRN-96**
+  - steps: Talk to an owner with music on.
+  - expected: Music and ambience dip while the owner's line plays and return after. (human)
+- **JRN-97**
+  - steps: Play the finale.
+  - expected: Firework pops sound with the bursts, and Skip is visible throughout the parade.
+- **JRN-98**
+  - steps: Check every cinematic (camera fly, tutorial, storm, reveal, crowd queue, parade).
+  - expected: Each shows a "Skip" button that jumps to its end state.
+- **JRN-99**
+  - steps: Load the game cold in Chrome and time it until "Open the stall" is clickable.
+  - expected: Under 5 s. Character GLBs (if any) load afterwards behind a short loading indicator.
+- **JRN-100**
+  - steps: Open the game with WebGL disabled.
+  - expected: The message "Your browser can't run 3D. Try Chrome on a laptop." appears instead of a blank page.
+- **JRN-101**
+  - steps: Check the repo for audio sources.
+  - expected: Every music and SFX file has a recorded licence or source, or is synthesised in code.
