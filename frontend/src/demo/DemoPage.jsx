@@ -6,6 +6,11 @@ const VIDEO = "/demo/fa-che-gameplay.mp4";
 export default function DemoPage() {
   const [hasVideo, setHasVideo] = useState(null);
   useEffect(() => {
+    const prev = document.title;
+    document.title = "FA CHE 花車: Gameplay video";
+    return () => { document.title = prev; };
+  }, []);
+  useEffect(() => {
     fetch(VIDEO, { method: "HEAD", cache: "no-store" })
       .then((r) => setHasVideo(r.ok && (r.headers.get("content-type") || "").includes("video")))
       .catch(() => setHasVideo(false));

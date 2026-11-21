@@ -99,14 +99,14 @@ def main():
     manifest_path = OUT / "manifest.json"
     manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
     chars = {k: v for k, v in manifest.get("characters", {}).items() if (OUT / Path(v["url"]).name).exists()}
-    results = {}
+    results = dict(manifest.get("last_run", {}).get("results", {}))
     if args.dry_run:
         for cid in ids:
             log(f"{cid}: would POST preview with prompt: {CHARACTERS[cid]}")
         return 0
     if not key:
         log("FAILED: MESHY_API_KEY is not set. Primitives stay in place.")
-        results = {cid: "skipped: no MESHY_API_KEY" for cid in ids}
+        results.update({cid: "skipped: no MESHY_API_KEY" for cid in ids})
     else:
         if set(key) == {"*"}:
             log("WARNING: MESHY_API_KEY looks like a masked placeholder (only asterisks). Trying anyway.")
@@ -128,7 +128,7 @@ def main():
                 "characters": chars, "last_run": {"at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "results": results}}
     manifest_path.write_text(json.dumps(manifest, indent=2))
     log(f"manifest written: {len(chars)} character(s) listed -> {manifest_path}")
-    return 0 if all(r.startswith("ok") for r in results.values()) else 1
+    return 0 if all(results[c].startswith("ok") for c in ids) else 1
 
 
 if __name__ == "__main__":

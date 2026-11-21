@@ -68,14 +68,14 @@ const SFX = {
 };
 
 export function sfx(name) {
-  const entry = { name, t: Math.round(performance.now()), played: false };
+  const now = performance.now();
+  const entry = { name, t: Math.round(now), played: false };
   log.push(entry);
   if (log.length > 300) log.shift();
   if (!prefs().sfx) return;
   setup();
   if (!ctx || !SFX[name]) return;
-  const now = performance.now();
-  if (now - (lastAt[name] || 0) < 70) return;
+  if (now - (lastAt[name] || 0) < 70) { entry.throttled = true; return; }
   lastAt[name] = now;
   SFX[name](ctx.currentTime + 0.01);
   entry.played = true;
@@ -173,7 +173,9 @@ export function startAudio() {
     if (s.placedFx && s.placedFx.key !== p.placedFx?.key) sfx("pop");
     if (s.flyId !== p.flyId && s.flying) sfx("whoosh");
     if (s.stormPhase !== p.stormPhase && ["t1", "t3", "t8"].includes(s.stormPhase)) sfx("alert");
-    if (s.stormPhase === "countdown" && s.countdown !== p.countdown && s.countdown > 0 && s.countdown <= 5) sfx("tick");
+    if (s.stormPhase === "countdown" && s.countdown < p.countdown) {
+      for (let c = Math.min(p.countdown - 1, 5); c >= Math.max(s.countdown, 1); c--) { lastAt.tick = 0; sfx("tick"); }
+    }
     if (s.scoreOpen && !p.scoreOpen) sfx("chime");
     sync(s);
   });
