@@ -1,0 +1,176 @@
+{
+  "theme": "dark_dusk_neon",
+  "project_title": "FA CHE 花車: The Flower Float",
+  "app_type": "3d_experience_game_hud",
+  "instructions_to_main_agent": [
+    "Build a persistent single-canvas React Three Fiber scene for West Kowloon harbourfront at dusk using purely Three.js primitives (Box, Cylinder, Sphere, Plane, Cone, Tube/Torus, Points) with no external GLTF/OBJ/texture downloads.",
+    "HUD overlays are layered on top of the R3F Canvas using absolute/fixed positioning with pointer-events-none on containers and pointer-events-auto on interactive cards/buttons.",
+    "Ensure CJK Traditional Chinese characters render crisply by importing Noto Sans HK and Noto Serif HK via Google Fonts in index.html or index.css.",
+    "All panels must respect the viewport layout rules so the dressed food truck in the center-right is NEVER fully obscured on 1366x768 and 1920x1080 screens.",
+    "Add data-testid attributes to all interactive elements, HUD chips, dialog buttons, meters, and menu items.",
+    "Use @react-three/fiber and @react-three/drei (or pure Three.js Canvas bridge) compatible with React 19 / CRA; install via yarn: 'yarn add three @react-three/fiber @react-three/drei canvas-confetti'."
+  ],
+  "typography": {
+    "google_fonts_url": "https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+HK:wght@400;500;700;900&family=Noto+Serif+HK:wght@600;900&display=swap",
+    "fonts": {
+      "display_cjk": "'Noto Serif HK', 'Cabinet Grotesk', serif",
+      "heading": "'Cabinet Grotesk', 'Noto Sans HK', sans-serif",
+      "body": "'Noto Sans HK', sans-serif",
+      "mono": "'JetBrains Mono', monospace"
+    },
+    "scale": {
+      "hero_title": "text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight",
+      "section_title": "text-2xl sm:text-3xl font-extrabold tracking-tight",
+      "panel_title": "text-lg sm:text-xl font-bold tracking-normal",
+      "body_text": "text-sm sm:text-base leading-relaxed font-normal",
+      "badge_caption": "text-xs font-mono uppercase tracking-widest"
+    }
+  },
+  "palette_tokens": {
+    "css_variables": {
+      "--bg-dusk-void": "#0a0a14",
+      "--bg-dusk-water": "#080c1b",
+      "--surface-hud": "rgba(13, 17, 34, 0.82)",
+      "--surface-hud-border": "rgba(255, 170, 70, 0.22)",
+      "--neon-amber": "#ff9e2c",
+      "--neon-gold": "#ffd15c",
+      "--neon-crimson": "#ff385c",
+      "--neon-jade": "#00f0a8",
+      "--neon-cyan": "#12d8fa",
+      "--neon-violet": "#bf5af2",
+      "--typhoon-alert": "#ff2a5f",
+      "--text-primary": "#f8fafc",
+      "--text-muted": "#94a3b8"
+    },
+    "scene_lighting": {
+      "sky_top": "#1a103c",
+      "sky_horizon": "#ff5c38",
+      "fog_color": "#120d2a",
+      "fog_density": 0.022,
+      "ambient_intensity": 0.55,
+      "ambient_color": "#4a2d68",
+      "dusk_sun_dir": [-15, 8, -25],
+      "dusk_sun_color": "#ff7a3d",
+      "water_reflect_color": "#0d1b38",
+      "water_wave_highlight": "#2a4365",
+      "neon_point_lights": [
+        {"color": "#ff385c", "intensity": 2.2, "distance": 18, "pos": [-4, 2.5, -2]},
+        {"color": "#00f0a8", "intensity": 2.0, "distance": 18, "pos": [4, 2.5, -2]},
+        {"color": "#ffd15c", "intensity": 2.5, "distance": 22, "pos": [0, 3.2, 0]}
+      ]
+    }
+  },
+  "hud_layout_matrix": {
+    "viewport_visibility_guarantee": "The central dressed cart (Fa Che Florist) sits at 3D world center (x: 0, y: -0.2, z: 0) facing camera slightly angled. Left HUD panels (Conversation, Notebook, Market Intel) occupy left 38% width max (w-[360px] to w-[420px]). Right HUD panels (Flower shelf, Inventory, Live meters) occupy right 35% width max (w-[340px] to w-[400px]). The center viewport (min 450px) remains completely transparent so the 3D decorated truck is always visible.",
+    "zones": {
+      "top_bar": {
+        "position": "fixed top-3 left-4 right-4 z-40 flex items-center justify-between pointer-events-none",
+        "elements": [
+          "Title badge ('FA CHE 花車' with live Typhoon status T1/T3/T8)",
+          "Typhoon 20s countdown pulse timer",
+          "Top-right Action cluster: In-game Menu button, 'Start a new run', 'Skip Cinematic' button"
+        ]
+      },
+      "left_dock": {
+        "position": "fixed left-4 top-16 bottom-4 w-[380px] z-30 pointer-events-none flex flex-col gap-3",
+        "elements": [
+          "Kit delivery rider speech bubbles (docked top-left or speech bubble anchored over cart)",
+          "Uncle Wing conversation panel (scrollable dialogue history, 3 quick reply chips, text input + Send, 'Ask the market' button)",
+          "Needs Notebook accordion (Budget, Desired Colours, Festival Goal, Cultural Taboos)"
+        ]
+      },
+      "right_dock": {
+        "position": "fixed right-4 top-16 bottom-4 w-[380px] z-30 pointer-events-none flex flex-col gap-3",
+        "elements": [
+          "Live 4-Meter HUD: Budget (HK$ spent / max, turns crimson when exceeded), Luck (%), Crowd Appeal (%), Storm Proof (T1-T8 rating)",
+          "Flower Shelf (12 HK traditional flowers grid, price HK$, cultural meaning, hardiness stat, active badges, '+' to dress cart)",
+          "Market Intel panel toggle ('Market notes (offline)', storm trajectory, rival food truck hints)"
+        ]
+      },
+      "bottom_dock": {
+        "position": "fixed bottom-4 left-[400px] right-[400px] z-30 pointer-events-none flex justify-center items-center gap-4",
+        "elements": [
+          "'Brace for the Storm' major CTA button (neon-amber glow, triggered when truck is prepped)",
+          "Cart Rotation slider / Orbit hint to inspect 3D flower arrangements"
+        ]
+      },
+      "modals_and_overlays": {
+        "start_screen": "z-50 inset-0 backdrop-blur-md bg-black/60 flex items-center justify-center pointer-events-auto",
+        "score_card_modal": "z-50 inset-0 backdrop-blur-xl bg-black/75 flex items-center justify-center p-4 pointer-events-auto"
+      }
+    }
+  },
+  "component_styles": {
+    "hud_panel": "pointer-events-auto bg-[#0d1122]/85 backdrop-blur-xl border border-amber-500/25 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] text-slate-100 p-4 transition-all duration-200",
+    "speech_bubble": "pointer-events-auto bg-[#16122c]/90 backdrop-blur-md border border-cyan-400/40 rounded-2xl rounded-bl-sm p-3.5 shadow-[0_4px_24px_rgba(18,216,250,0.25)] text-sm text-cyan-50 relative",
+    "primary_button": "pointer-events-auto px-5 py-2.5 rounded-lg font-bold tracking-wide uppercase text-sm bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black shadow-[0_0_20px_rgba(255,158,44,0.45)] active:scale-95 transition-all duration-150 border border-amber-300/40",
+    "neon_chip": "pointer-events-auto px-3 py-1.5 rounded-full text-xs font-medium border border-cyan-500/30 bg-cyan-950/40 text-cyan-200 hover:bg-cyan-500/20 hover:border-cyan-400 active:scale-95 transition-all duration-150 shadow-[0_0_10px_rgba(18,216,250,0.15)]",
+    "danger_button": "pointer-events-auto px-4 py-2 rounded-lg font-bold text-xs uppercase bg-rose-600/90 hover:bg-rose-500 text-white shadow-[0_0_16px_rgba(255,42,95,0.4)] border border-rose-400/30 transition-all",
+    "meter_bar": "h-2 w-full bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50"
+  },
+  "flowers_dataset": [
+    {"id": "f1", "name_zh": "牡丹 (Peony)", "price_hkd": 120, "meaning": "Wealth & Aristocracy", "hardiness": 2, "color": "#ff385c", "badge": "High Prestige"},
+    {"id": "f2", "name_zh": "菊花 (Chrysanthemum)", "price_hkd": 45, "meaning": "Longevity & Endurance", "hardiness": 5, "color": "#ffd15c", "badge": "Storm Hardy"},
+    {"id": "f3", "name_zh": "劍蘭 (Gladiolus)", "price_hkd": 60, "meaning": "Rising Career Step-by-Step", "hardiness": 4, "color": "#ff6b4a", "badge": "Height"},
+    {"id": "f4", "name_zh": "銀柳 (Silver Willow)", "price_hkd": 35, "meaning": "Silver Coins & Abundance", "hardiness": 5, "color": "#e2e8f0", "badge": "Durable"},
+    {"id": "f5", "name_zh": "百合 (Lily)", "price_hkd": 80, "meaning": "100 Years of Harmony", "hardiness": 3, "color": "#f8fafc", "badge": "Fragrant"},
+    {"id": "f6", "name_zh": "桃花 (Peach Blossom)", "price_hkd": 150, "meaning": "Romance & Relationships", "hardiness": 2, "color": "#f472b6", "badge": "Crowd Magnet"},
+    {"id": "f7", "name_zh": "五代同堂 (Solanum Mammosum)", "price_hkd": 90, "meaning": "Five Generations Together", "hardiness": 5, "color": "#f59e0b", "badge": "Good Luck"},
+    {"id": "f8", "name_zh": "水仙 (Narcissus)", "price_hkd": 55, "meaning": "Elegance & Good Fortune", "hardiness": 2, "color": "#fef08a", "badge": "Delicate"},
+    {"id": "f9", "name_zh": "富貴竹 (Lucky Bamboo)", "price_hkd": 40, "meaning": "Peace, Safety & Growth", "hardiness": 5, "color": "#10b981", "badge": "Structural"},
+    {"id": "f10", "name_zh": "蝴蝶蘭 (Phalaenopsis Orchid)", "price_hkd": 180, "meaning": "Happiness Flying In", "hardiness": 3, "color": "#c084fc", "badge": "Premium"},
+    {"id": "f11", "name_zh": "雞冠花 (Cockscomb)", "price_hkd": 30, "meaning": "First Place / Heroic Crown", "hardiness": 4, "color": "#ef4444", "badge": "Vibrant"},
+    {"id": "f12", "name_zh": "繡球花 (Hydrangea)", "price_hkd": 70, "meaning": "Reunion & Gratitude", "hardiness": 1, "color": "#38bdf8", "badge": "Needs Shelter"}
+  ],
+  "food_trucks_3d_specs": [
+    {
+      "name": "Fa Che Florist (Center Hero)",
+      "position": [0, -0.2, 0],
+      "color": "#1e293b",
+      "accent": "#ffd15c",
+      "features": "Low-poly wooden cart base, striped canvas awning, multi-tier stepped flower racks with interactive placed flower clusters, hanging lantern string, front neon sign '花車 FA CHE'"
+    },
+    {
+      "name": "Wing's Egg Waffles",
+      "position": [-5.8, -0.2, -2.5],
+      "rotation": [0, 0.45, 0],
+      "color": "#9a3412",
+      "neon_text": "WING 雞蛋仔",
+      "features": "Steamer chimney with particle steam, warm yellow service counter, waffle grid prop on roof"
+    },
+    {
+      "name": "Curry Up",
+      "position": [5.8, -0.2, -2.5],
+      "rotation": [0, -0.45, 0],
+      "color": "#854d0e",
+      "neon_text": "CURRY 咖喱辣",
+      "features": "Deep red & turmeric yellow truck, glowing neon red chili sign, aluminium pots"
+    },
+    {
+      "name": "Fong's Milk Tea and Pineapple Buns",
+      "position": [-2.2, -0.2, -6.5],
+      "rotation": [0, 0.15, 0],
+      "color": "#065f46",
+      "neon_text": "FONG 奶茶菠蘿包",
+      "features": "Hong Kong vintage green milk-tea truck, giant glowing bun primitive sign, retro diner striped awning"
+    }
+  ],
+  "testing_attributes": {
+    "start_button": "data-testid=\"open-stall-button\"",
+    "player_name_input": "data-testid=\"player-name-input\"",
+    "start_game_button": "data-testid=\"start-game-button\"",
+    "ask_market_button": "data-testid=\"ask-market-button\"",
+    "dialogue_input": "data-testid=\"dialogue-text-input\"",
+    "dialogue_send_button": "data-testid=\"dialogue-send-button\"",
+    "brace_storm_button": "data-testid=\"brace-storm-button\"",
+    "skip_cinematic_button": "data-testid=\"skip-cinematic-button\"",
+    "menu_button": "data-testid=\"in-game-menu-button\"",
+    "new_run_button": "data-testid=\"start-new-run-button\"",
+    "back_to_harbour_button": "data-testid=\"back-to-harbour-button\"",
+    "meter_budget": "data-testid=\"meter-budget\"",
+    "meter_luck": "data-testid=\"meter-luck\"",
+    "meter_crowd": "data-testid=\"meter-crowd\"",
+    "meter_storm_proof": "data-testid=\"meter-storm-proof\"",
+    "score_card": "data-testid=\"game-score-card\""
+  }
+}

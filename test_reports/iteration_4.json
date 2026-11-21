@@ -1,0 +1,35 @@
+{
+  "summary": "Phase 4 (Jasmine and Auntie Fong playable, ribbon, parade finale) tested on backend and frontend, plus a Wing regression. Backend: 69 of 71 pytest passed (new file test_phase4_owners.py plus the earlier suites). The 2 failures are the same real bug: 2 fallback lines have no Cantonese word. Frontend: JRN-72 and JRN-76 to JRN-88 PASS in the UI. Wing still scores 3 stars end to end, mic simulate sends, TTS falls back to text-only, and there were no console errors.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/dialogue (fallback, JRN-73/74 'every reply contains a Cantonese word')", "issue": "2 fallback lines have no Cantonese word. owners_p4.JASMINE.fallback.budget[1] is 'Like, HK$1500 max, ok? Gotta keep it real.' (served when the turn index is odd). owners_p4.FONG.fallback.goal[0] is \"It's our 20th anniversary, dear! I want a traditional congratulation stand with a ribbon, and flowers that last a week.\" (served on turn 0, which is what the initial chip 'What's the occasion, Auntie?' gets). The LLM path adds 'Hai, ' to replies through validate(), but fallback_turn does not. Fix: add a Cantonese word to both lines, or apply the same 'Hai, ' guard inside fallback_turn."},
+      {"endpoint": "POST /api/dialogue (live)", "issue": "Info only: 1 of about 8 live Jasmine calls hit the 3.9 s LLM timeout and used the fallback (latency 3902 ms). The fallback was still correct (budget revealed). The other live calls took 2.6 to 3.3 s."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Finale fireworks", "issues": ["The firework particles show as square points (pointsMaterial has no round sprite or alphaMap), so the bursts look like pixel confetti. Optional: use a round sprite texture."]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_phase4_owners.py", "/app/backend/tests/test_fache_api.py", "/app/test_reports/pytest/pytest_results_phase4.xml"],
+  "action_items": [
+    "Add a Cantonese word to owners_p4 JASMINE fallback.budget[1] and FONG fallback.goal[0], or apply the Cantonese guard (the 'Hai, ' prefix) in dialogue.fallback_turn as validate() already does."
+  ],
+  "critical_code_review_comments": [
+    "store.completeTrucks hook: it replaces the levels of the listed non-active owners with freshLevel (the conversation and needs are lost). This is fine for a test hook, but it means JRN-83 checks of the notebook for an owner completed by the hook show empty needs.",
+    "The finale auto-ends after FINALE_MS=14 s (director.js). When the screen is slow, a Skip click can arrive after the parade has ended. This is expected; noted for test writers.",
+    "clickSlot: the /api/ribbon call has no loading state. If the brace starts before the ribbon returns (about 2 s live), the score is sent with ribbon=null and receipt-ribbon is missing. Consider awaiting the ribbon in beginReveal, or using the owner's ribbon_fallback when it is null.",
+    "Jasmine's taboo_ids include 'stand', so placing the stand on Jasmine's truck also fires a /api/ribbon LLM call that is not needed. It does no harm, but the call could be skipped for non-Fong owners if wanted.",
+    "The intel cache key now includes owner_id (the iteration 3 minor issue is fixed). The offline festival card is chosen by date (JRN-88 fixed)."
+  ],
+  "updated_files": ["/app/backend/tests/test_phase4_owners.py (new)", "/app/backend/tests/test_fache_api.py (test_non_playable_404 now uses owner 'nobody', because fong is playable in Phase 4)"],
+  "success_rate": {"backend": "97% (69/71; the 2 failures are the Cantonese fallback lines)", "frontend": "100% of the Phase 4 UI journeys tested (JRN-72, 76, 77/78, 83, 84-87, 88) plus the Wing regression"},
+  "seed_data_creation": "None. Player names TEST_P4*; all state is in browser localStorage, which was cleared by Play again / a new context.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Server date is 2026-11-20, so the next festival is Winter Solstice (22 Dec 2026). Run: export REACT_APP_BACKEND_URL=...; pytest /app/backend/tests -n 4. Verified in the UI with ?force_fallback=1: clicking Jasmine or Fong starts the talk with talk-owner-name; Fong reveals all 4 needs and reaches trust 4 through the 20 years and regulars chips; a lily on the awning gives the bubble 'Aiya dear, lilies? ...' (tone angry); the stand in the stand slot sets level.ribbon to the fallback; the score card shows receipt-ribbon and 3 stars for kumquat, orchid, bamboo and the stand (HK$790); /api/intel is called with owner_id=fong; after a refresh Fong resumes with her placements, notebook, conversation, ribbon and intel, and wing and jasmine stay complete. The finale (from closing the third real score card, or from completeTrucks()+startFinale()) gives nightFx 1, trucks moving left, fireworks and skip-cinematic-button; Skip shows final-score-panel 3/3/3, 9 / 9, HK$1575; share downloads fa-che-float.png of 1.45 MB, 1920x1080, not blank; after a refresh the final panel returns; Play again clears fache_save_v1 and shows the start screen. Live LLM: the Fong ribbon was ['20 Years of Milk Tea & Buns','Every Morning, Every Smile'] (2.1 s).",
+  "rca of the issue": "Cantonese word missing: dialogue.validate() adds 'Hai, ' when an LLM reply has no CANTONESE match, but fallback_turn() returns the authored lines exactly as written, and 2 of the new Phase 4 lines have no word from the CANTONESE regex. Reproduction: POST /api/dialogue with X-Force-Fallback: 1 and {owner_id: 'fong', message: \"What's the occasion, Auntie?\", history: []}, or {owner_id: 'jasmine', message: \"What's your budget?\", history: [one player turn and one owner turn]}."
+}

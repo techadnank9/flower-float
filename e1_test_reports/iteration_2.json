@@ -1,0 +1,30 @@
+{
+  "iteration": 2, "phase": "4",
+  "passed": 10, "failed": 1,
+  "retest_needed": true,
+  "bugs": [
+    {"severity": "medium", "criterion": "JRN-83 Per-owner isolation and resume",
+     "title": "Completed trucks lose their star badges while another owner's level is in progress",
+     "evidence": "Check p4-isolation-resume, failed twice. After completeTrucks(['wing','jasmine']) and a reload with Fong mid-Arrange, the store restores correctly: activeOwner fong, beat arrange, placements {roof:kumquat,counter:orchid}, notebook budget HK$1000, 3 conversation lines, completed=[wing,jasmine]. Both trucks are visibly decorated. But on Back to harbour, getByTestId('truck-stars-wing') is not found (screenshot p4-isolation-resume-failure.png). Root cause in frontend/src/scene/Truck.jsx Stars(): the badge shows only when s.level.beat is 'done' or 'idle', and s.level is the ACTIVE owner's level (fong=arrange), so stars for other completed trucks are hidden. Frontend-only bug: the backend is healthy (25/25 pytest pass), and the stars do show once all three trucks are complete (parade screenshot). Suggested fix: gate on s.completed[ownerId] alone, or on s.levels[ownerId].beat."}
+  ],
+  "action_items": [
+    {"type": "note", "detail": "Ribbon latency: POST /api/ribbon answers in about 2.1 s (llm) and 0 ms (forced fallback) via curl. In the UI, the time from placing the stand to level.ribbon being set was 7.1 s (live) and 3.7 s (forced fallback), so the client seems to add about 3.5 s of delay. Headless rendering is slow, but the about 4 s target may be missed. Please review."},
+    {"type": "note", "detail": "Trust raising Crowd versus a no-Trust run was not compared numerically in the UI. Trust rising (0 to 2 after a personal question) is verified in the browser, and the backend test test_personal_trust passes."},
+    {"type": "note", "detail": "The start-name-tutorial check hung on a non-forced click of the animated kit bubble. It was rewritten with force clicks and step timeouts, and now passes. This was a test issue, not an app bug."},
+    {"type": "note", "detail": "8 criteria, all exercised. Audio and live intel are not reported, per spec_deviations."}
+  ],
+  "checks": [
+    {"criterion": "Backend phases 1-4 (dialogue, score, ribbon, fallback, festival date)", "name": "e1_tests (8 files, 25 tests)", "lane": "backend", "status": "passed", "evidence": "25 passed in 13.28s: jasmine/fong score 3★, taboo, no stand, lily, overspend, min 1, ribbon llm+fallback, festival future"},
+    {"criterion": "JRN-72 All trucks open, any order", "name": "p4-trucks-any-order", "lane": "browser", "status": "passed", "evidence": "Jasmine, Fong and Wing trucks open in that order with greetings; no 'help Uncle Wing first'"},
+    {"criterion": "JRN-73/74/75 talk + notebook + Trust", "name": "p4-jasmine-fong-talk-notebook", "lane": "browser", "status": "passed", "evidence": "Small talk leaves notebook '?'. Jasmine: HK$1500 / pinks and oranges / photo-worthy+edible / old-fashioned. Fong: HK$1000 / 20th anniversary stand, ribbon, week / no strong scents. 'dear' in 5/5. Trust 0->2"},
+    {"criterion": "JRN-76 Taboo complaints", "name": "p4-taboo-complaints", "lane": "browser", "status": "passed", "evidence": "J: 'Aiya, chrysanthemums? So old-fashioned...' F: 'Mm hai, dear! That smell is far too strong for my tea.'"},
+    {"criterion": "JRN-77/78 Ribbon message", "name": "p4-fong-ribbon", "lane": "browser", "status": "passed", "evidence": "live ['20 Years of Sweet Buns & Tea','Congrats Auntie Fong!'] on receipt-ribbon; fallback ['Congratulations on 20 Years!','二十週年 生意興隆'], no page errors. Latency noted"},
+    {"criterion": "JRN-79..82 Scoring Jasmine and Fong", "name": "p4-scoring-jasmine-fong", "lane": "browser", "status": "passed", "evidence": "Jasmine good 3★ (total HK$400 = item sum, delivery slot); Jasmine+ychrys 2★ taboo line failed; Fong no stand 2★ 'anniversary goal unmet'; Fong+lily 2★. Fong good 3★ in p4-fong-ribbon"},
+    {"criterion": "JRN-83 Per-owner isolation and resume", "name": "p4-isolation-resume", "lane": "browser", "status": "failed", "evidence": "State restored correctly, but truck-stars-wing/jasmine are missing while Fong is in arrange"},
+    {"criterion": "JRN-84..87 Finale and share", "name": "p4-finale-share", "lane": "browser", "status": "passed", "evidence": "Closing the 3rd score card starts the parade (nightFx 1, Skip visible, fireworks). Final panel: 3/3/3, 9 / 9, HK$1575. fa-che-float.png 1280x720 801KB. Reload restores the panel. Play again leaves save null and returns to the start screen"},
+    {"criterion": "JRN-88 Offline festival date", "name": "p4-offline-festival-date", "lane": "browser", "status": "passed", "evidence": "Today 2026-11-20 -> 'Winter Solstice is coming' (22 Dec 2026), not Mid-Autumn"},
+    {"criterion": "Regression Wing good run", "name": "reveal-score-close-replay", "lane": "browser", "status": "passed", "evidence": "Wing 3★, receipt HK$440, truck stars on harbour"},
+    {"criterion": "Regression start/name/tutorial", "name": "start-name-tutorial", "lane": "browser", "status": "flaky", "evidence": "The original script timed out twice (click hang). Rewritten with force clicks and it passes: name hint, 'Boss Mei!', 'Start with any truck', tutorialDone=true"},
+    {"criterion": "Phase 1-3 silent fallback (spec deviation)", "name": "fallback-ui-silent", "lane": "browser", "status": "passed", "evidence": "re-run this iteration (ran on the preview URL): passed, text-only fallback with no errors"}
+  ]
+}

@@ -1,0 +1,66 @@
+import { createRequire } from 'module';
+const require = createRequire('/usr/lib/node_modules/@playwright/test/');
+const { chromium } = require('playwright-core');
+import fs from 'fs';
+const OUT = '/app/e1_test_reports/videos';
+const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'] });
+const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 }, recordVideo: { dir: OUT + '/raw', size: { width: 1280, height: 720 } } });
+await ctx.addInitScript(() => { try { if (!sessionStorage.getItem('cleared')) { localStorage.clear(); sessionStorage.setItem('cleared', '1'); } } catch (e) {} });
+const page = await ctx.newPage();
+page.setDefaultTimeout(30000);
+const W = (ms) => page.waitForTimeout(ms);
+const tid = (id) => page.getByTestId(id);
+const st = (f, a) => page.evaluate(f, a);
+await page.goto('http://localhost:3000/', { waitUntil: 'domcontentloaded' });
+await tid('open-stall-button').waitFor();
+await page.waitForFunction(() => !document.querySelector('[data-testid="open-stall-button"]').disabled);
+await W(2000);
+await tid('open-stall-button').click();
+await tid('player-name-input').waitFor(); await W(800);
+await tid('player-name-input').pressSequentially('Mei', { delay: 150 }); await W(1000);
+await tid('start-game-button').click();
+for (let i = 0; i < 8; i++) {
+  if (!(await tid('kit-bubble-text').isVisible().catch(() => false))) break;
+  await W(1800);
+  await tid('kit-bubble').click({ force: true }).catch(() => {});
+}
+await W(2000);
+const p = await st(() => window.__fache.project('truck-wing'));
+await page.mouse.move(p.x, p.y); await W(800); await page.mouse.click(p.x, p.y);
+await tid('conversation-panel').waitFor(); await W(2000);
+const ask = async (t) => {
+  const n = await tid('chat-msg-owner').count();
+  await tid('dialogue-text-input').pressSequentially(t, { delay: 35 });
+  await tid('dialogue-send-button').click();
+  await page.waitForFunction((n) => document.querySelectorAll('[data-testid="chat-msg-owner"]').length > n, n, { timeout: 15000 });
+  await W(1800);
+};
+await ask('Who started this truck? Tell me about your father.');
+await ask("What's your budget, Uncle?");
+await ask('What colours do you like?');
+await ask('What should the flowers bring you?');
+await ask('Anything I should avoid?');
+await W(1500);
+await tid('ask-market-button').click();
+await page.locator('.intel-cards > .intel-card').nth(2).waitFor({ timeout: 8000 }); await W(2500);
+await tid('start-arranging-button').click(); await W(1500);
+for (const [f, s] of [['kumquat', 'roof'], ['bamboo', 'awning'], ['ychrys', 'counter'], ['orchid', 'bumper']]) {
+  await tid('shelf-flower-' + f).click(); await W(600);
+  await st((s) => window.__fache.store.getState().clickSlot(s), s); await W(1000);
+}
+await W(1200);
+await tid('brace-storm-button').click();
+await page.waitForFunction(() => /reveal|score/.test(window.__fache.store.getState().level.beat), null, { timeout: 60000 });
+await W(2500);
+await tid('game-score-card').waitFor({ timeout: 30000 }); await W(3000);
+await tid('score-close-button').click(); await W(2000);
+await st(() => { window.__fache.completeTrucks(['jasmine', 'fong'], 3); });
+await W(1500);
+await st(() => window.__fache.startFinale());
+await tid('final-score-panel').waitFor({ timeout: 40000 }); await W(4000);
+const v = page.video();
+await ctx.close(); await browser.close();
+const src = await v.path();
+fs.renameSync(src, OUT + '/fa-che-gameplay.webm');
+fs.rmSync(OUT + '/raw', { recursive: true, force: true });
+console.log('saved', OUT + '/fa-che-gameplay.webm');

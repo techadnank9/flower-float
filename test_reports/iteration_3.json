@@ -1,0 +1,43 @@
+{
+  "summary": "Phase 3 Market Intel tested on backend and frontend, plus a Phase 1 and 2 regression. Backend: 46/46 pytest passed (14 new intel tests, plus the Phase 1 and 2 suites). Frontend: JRN-65 to JRN-70 all PASS through the ?intel_mock=1, ?force_fallback=1, ?intel_mock=1&intel_fail=festival and ?intel_slow=1 hooks. JRN-71: the YDC key is not leaked, but this could only be checked weakly (see the RCA). ROOT CAUSE of the 403: YDC_API_KEY in the backend process environment (pid of 'uvicorn server:app') is literally 16 asterisks '****************', a masked placeholder, not a real key. Real-network relevance (Q-22) is BLOCKED BY KEY. Regression PASS: needs and trust 4 via the seeded fallback, mic simulate still sends, TTS outcome is 'forced-off' or a silent fallback with no console errors, the 4-flower board scores 3 stars with HK$440, and the T8 storm runs.",
+  "backend_issues": {
+    "critical": [
+      {"endpoint": "GET /api/intel (real path)", "issue": "The YDC_API_KEY env value is the placeholder '****************' (16 asterisks), so You.com returns 403 and every real request falls back to offline cards. The main agent or the user must supply the real key.", "priority": "HIGH"}
+    ],
+    "minor": [
+      {"endpoint": "intel._summary", "issue": "The sentence split regex (?<=[.!?])\\s+ breaks on the abbreviation 'No.' in 'Signal No. 3', so only 'Typhoon Signal No. 3 is in force.' is kept and the second sentence ('Occasional heavy showers and squally thunderstorms tonight.') is lost. Real HKO results ('No. 8', 'No. 1') will be cut short the same way. Fix: protect 'No.' (e.g. a negative lookbehind for No) before splitting."},
+      {"endpoint": "intel cache", "issue": "The cache key is (session_id, date) and ignores owner_id. This is fine while only Wing uses intel, but later owners would share cards."},
+      {"endpoint": "POST /api/owners/{id}/evaluate", "issue": "Info only: intel_effects.amount > 10 is rejected with 422 (pydantic le=10), and the scoring clamp is a second guard. Acceptable."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Arrange screen market button", "issue": "arrange-market-button is always labelled 'Market notes', even when the stored intel is live ('Researched live with You.com'). Consider 'Market intel'.", "selector": "[data-testid=arrange-market-button]", "priority": "LOW"}
+    ],
+    "integration_issues": [
+      {"flow": "Ask the market latency", "issue": "In headless Chromium the cards show about 1.8 s after the /api/intel response arrives (force_fallback: the response takes 84 ms, the cards show at 1809 ms; intel_slow: the response takes 3594 ms, the cards show at 5578 ms). The backend budget is met (3.6 s), but the cards are not on screen within about 4 s. This is probably WebGL main-thread load in the software renderer, so check it on a real GPU.", "affected_selectors": ["ask-market-button", "intel-card-weather"]}
+    ],
+    "design_issues": [
+      {"screen": "Market Intel panel (live)", "issues": ["The 'Researched live with You.com' pill wraps to 2 lines next to the 'Market Intel' heading, which also wraps (Market / Intel). Shorten the pill or put it under the heading."]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_intel_phase3.py", "/app/backend/tests/test_fache_api.py", "/app/backend/tests/test_tts_phase2.py", "/app/test_reports/pytest/pytest_results_phase3.xml"],
+  "action_items": [
+    "Set a real YDC_API_KEY in the backend environment (the current value is the masked placeholder '****************'), then retest the real live path, Q-22 relevance, the real server cache (cached:true, cache_hits++) and JRN-71 against the real key string.",
+    "Fix intel._summary so it does not split sentences at 'No.' (typhoon signals).",
+    "Optional: give arrange-market-button a label that fits live intel; tidy the wrapping of the live label pill; include owner_id in the intel cache key."
+  ],
+  "critical_code_review_comments": [
+    "intel.gather_intel: caching correctly skips hooked requests and all-offline results. A unit test with a patched _search confirmed: the 2nd call is cached:true, cache_hits +1, there are no extra searches, and a new session misses the cache.",
+    "With a 3.5 s asyncio.wait_for per topic, run in parallel, the server returns in about 3.6 s. The client aborts at 4.3 s and then retries with X-Force-Fallback, so the worst case is about 4.3 s plus a round trip. OK.",
+    "The live festival card is chosen by date: Winter Solstice (22 Dec 2026). The offline festival card is the seeded Mid-Autumn one, which is out of date in Nov 2026; it would be better to pick the offline festival card by date too.",
+    "Updated test_fache_api.py::test_intel to the Phase 3 contract (sources[0].url instead of source_url). It failed only because of the intended change to the response shape."
+  ],
+  "updated_files": ["/app/backend/tests/test_intel_phase3.py", "/app/backend/tests/test_fache_api.py"],
+  "success_rate": {"backend": "100% (46/46)", "frontend": "100% of the testable Phase 3 journeys (JRN-65..70); JRN-71 passes but only weakly; the real live path is blocked by the key"},
+  "seed_data_creation": "None. Session ids prefixed TEST_; intel state lives only in server memory and browser localStorage.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "No auth. Export REACT_APP_BACKEND_URL and run pytest /app/backend/tests. The YDC key is in /proc/<pid of '/root/.venv/bin/uvicorn server:app'>/environ, not in .env. Note: the current value is 16 asterisks, so a fixed-string bundle search gives false positives (webpack comments contain runs of '*'). UI flow: open-stall-button (wait about 1.5 s after load) > player-name-input > start-game-button > skip-cinematic-button > click at __fache.project('truck-wing') > ask-market-button > start-arranging-button (force, no_wait_after) > shelf-flower-<id> + store.clickSlot(slot) > brace-storm-button > the score card shows about 18 s later. The talk input testid is dialogue-text-input. With live mock intel, bamboo on the roof gives Storm 28 (API with intel_effects=[] gives 22).",
+  "rca of the issue": "403 from You.com: the YDC_API_KEY environment value in the running backend is '****************' (a masked or redacted placeholder injected instead of the real secret). Reproduction: tr '\\0' '\\n' < /proc/<uvicorn pid>/environ | grep YDC_API_KEY. Mitigation: provide the real key through the deployment secret or the env and restart the backend."
+}

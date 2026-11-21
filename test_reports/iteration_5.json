@@ -1,0 +1,55 @@
+{
+  "summary": "Phase 5 (Meshy build script, sound, music toggle, polish, /demo) tested on backend and frontend, plus Phase 4 and Wing regressions. Backend: 80 of 81 pytest pass (70/71 in the earlier suites plus 10/10 in the new test_phase5_assets.py). The 1 failure is flaky: test_slow_within_budget under xdist load (latency 4389 ms > 4200); it passed 3 of 3 times when run alone. Frontend: JRN-89 to JRN-101, the /demo page, JRN-83 star badges, ribbon timing and Wing at 3 stars end to end all PASS. 3 minor issues: in 1 of 2 storm runs only 4 of 5 'tick' entries were logged; the audio log marks throttled sounds played:false; and the /demo document title is not updated. No console or page errors.",
+  "verified": {
+    "JRN-89": "PASS. generate_characters.py --only kit logged 'HTTP 401 creating preview task: {\"message\":\"Invalid API key\"}', exited 1, and wrote characters {}. The only API base is api.meshy.ai/openapi/v2/text-to-3d (preview -> poll -> refine -> poll -> GLB from model_urls -> gltf-transform). Preview params (smart-topology, meshy-t2.5, target_polycount 8000, pose_mode a-pose) match the current Meshy docs. manifest.json was backed up and restored byte for byte.",
+    "JRN-90": "PASS. No 'meshy' in bundle.js or the models chunk, and no meshy network requests during a full Wing play.",
+    "JRN-91": "PASS. test-bad: loaded [kit], failed wing ('Unexpected token <' JSON) and fong ('Offset is outside the bounds of the DataView'). No visible error elements, no page errors; wing and fong render as primitives.",
+    "JRN-92": "PASS. test-good: loaded fong and kit. 2 'glb-character' groups in the scene, world min Y about 0 (on the ground), position and rotation change between samples (idle). Files are 4.3 KB and 5.6 KB.",
+    "JRN-93": "PASS. 4 pops on 4 placements, whoosh on the camera fly, 3 alerts for T1/T3/T8, storm loop true, chime on the score card. Ticks: 5 in one run, 4 in another (see the issue below).",
+    "JRN-94/95": "PASS. music true after Open the stall, both toggles visible. With both off: data-state off, localStorage {music:false,sfx:false}. After reload and resume both stay off, prefs false, and the whoosh log entry is played:false.",
+    "JRN-96": "PASS. ducked false -> true when speaking is set -> false when it is null.",
+    "JRN-97": "PASS. completeTrucks()+startFinale(): 42 firework entries. Sampling every 50 ms found Skip present for the whole parade (0 misses). The parade ended at about 15.2 s, then final-score-panel showed 9/9, HK$1575.",
+    "JRN-98": "PASS. Skip seen on the camera fly, tutorial, storm, reveal (queueing true) and parade.",
+    "JRN-99": "PASS. openStallReadyMs 2071 on a cold load.",
+    "JRN-100": "PASS. Exact text \"Your browser can't run 3D. Try Chrome on a laptop.\" (plus 花車 heading), no canvas.",
+    "JRN-101": "PASS. LICENSES.md exists; no audio files in public/.",
+    "Demo": "PASS. /demo and /demo/ show demo-title 'FA CHE 花車: Gameplay video' and demo-coming-soon, with no canvas. With a dummy mp4 (HEAD gives video/mp4), demo-video and demo-download-button appear and the download is fa-che-gameplay.mp4. The file and folder were deleted. The back link leads to the game, and / is unaffected.",
+    "Regression": "PASS. Wing scored 3 stars end to end (HK$440). truck-stars-wing and truck-stars-jasmine are visible while Fong is mid-Arrange and after a reload. Fong ribbon with force_fallback is the seeded lines, ribbonTiming 809 ms (<1000), and it persists after a reload."
+  },
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/intel (X-Intel-Slow)", "issue": "Flaky: test_slow_within_budget failed once under the parallel suite (latency_ms 4389 > 4200). It passed 3 of 3 times when run alone. Likely server contention under xdist."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {"flow": "Storm countdown tick (JRN-93)", "issue": "In 1 of 2 natural storm runs only 4 'tick' entries were logged (5 in the other). Ticks fire only when the store's integer countdown changes, and the 100 ms setInterval in useStormDirector can skip an integer if the main thread stalls for over 1 s (heavy software-GL frames in headless). Fix: in audio.js, when countdown jumps (for example 5 -> 3), emit a tick for each skipped value between p.countdown and s.countdown (bounded to 1..5), or schedule all 5 ticks on the audio clock when the countdown starts.", "affected_selectors": ["window.__fache.audio.log"]},
+      {"flow": "Audio log semantics", "issue": "sfx() pushes the log entry before the 70 ms same-name throttle. Throttled calls therefore stay played:false even with SFX on: 36 of 42 firework entries were played:false in the finale. This contradicts the documented 'played:false means SFX are muted'. Fix: don't log throttled calls, or add a throttled:true flag.", "affected_selectors": ["window.__fache.audio.log"]}
+    ],
+    "design_issues": [
+      {"screen": "/demo", "issues": ["document.title stays 'FA CHE 花車: The Flower Float'. Set it to 'FA CHE 花車: Gameplay video' on the demo route. The page heading is already correct."]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_phase5_assets.py", "/app/backend/tests/test_fache_api.py", "/app/backend/tests/test_intel_phase3.py", "/app/backend/tests/test_phase4_owners.py", "/app/backend/tests/test_tts_phase2.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "audio.js: emit the missing ticks when the countdown skips integers, so there are always 5 ticks",
+    "audio.js: don't mark throttled SFX as played:false (or add a throttled flag), so the log matches the documented meaning",
+    "DemoPage.jsx: set document.title to 'FA CHE 花車: Gameplay video' (and restore it when leaving)",
+    "Optional: loosen the 4200 ms upper bound in test_slow_within_budget, or run it outside xdist"
+  ],
+  "critical_code_review_comments": [
+    "generate_characters.py with --only rewrites last_run.results with only the listed ids, so earlier results for other characters are lost. Merge with the previous last_run.results instead.",
+    "generate_characters.py: on HTTP 401/402 the remaining ids are skipped; other errors continue. That is fine, but a 429 rate limit would just fail each character; consider retry with backoff.",
+    "ribbonTiming with force_fallback is still a network round trip (809 ms here), close to the 1000 ms bar. Consider using data.owners[owner].ribbon_fallback locally when force_fallback is on.",
+    "The audio sync() runs on every store change (subscribe without a selector). That is cheap now, but use subscribeWithSelector or compare relevant keys only."
+  ],
+  "updated_files": ["/app/backend/tests/test_phase5_assets.py"],
+  "success_rate": {"backend": "98.8% (80/81, 1 flaky)", "frontend": "100% of journeys pass; 2 minor audio-log robustness issues"},
+  "flaky_tests": ["tests/test_intel_phase3.py::TestFallback::test_slow_within_budget (failed 1 of 4 runs, only under xdist)", "JRN-93 tick count (4 instead of 5 in 1 of 2 headless runs)"],
+  "seed_data_creation": "None. Only browser localStorage saves (TEST_* player names), cleared afterwards. manifest.json was restored from /tmp/manifest.bak.json (identical). The dummy /app/frontend/public/demo/fa-che-gameplay.mp4 and its folder were deleted.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Run: export REACT_APP_BACKEND_URL=...; pytest /app/backend/tests. test_phase5_assets.py runs a dry run of the Meshy script (no write). To inspect GLB characters in the scene, patch Object3D.prototype.updateMatrixWorld from window.__fache.store.getState().models.kit's prototype chain and collect objects named 'glb-character'. The skip-cinematic button can disappear while clicking right as a fly ends; use store.getState().skip() for reliability. A natural storm takes about 27 s; capture the audio log after beat leaves 'storm'."
+}

@@ -1,0 +1,49 @@
+{
+  "iteration": 3,
+  "mode": "retest",
+  "phase": "5 (full regression P1-P5)",
+  "passed": 23,
+  "failed": 0,
+  "retest_needed": false,
+  "bugs": [],
+  "action_items": [
+    {"type": "mp4_not_produced", "severity": "low", "detail": "ffmpeg is not installed (no system binary, imageio-ffmpeg or cv2), so /app/e1_test_reports/videos/fa-che-gameplay.mp4 was NOT created. Only the webm exists. To make the mp4: ffmpeg -i fa-che-gameplay.webm -c:v libx264 -pix_fmt yuv420p -movflags +faststart fa-che-gameplay.mp4, then copy it to the path /demo reads."},
+    {"type": "human_verify", "severity": "low", "detail": "FPS and audio ducking during owner lines can't be checked headless. With the placeholder ElevenLabs key no owner audio plays (voice log outcome is pending/text-only), so ducking never triggers."}
+  ],
+  "deliverables": {
+    "video_webm": "/app/e1_test_reports/videos/fa-che-gameplay.webm",
+    "video_webm_info": "1280x720, 3m15s, about 44 MB. One continuous run: start screen, typing the name, Kit tutorial, harbour, fly to Wing, 5 typed talk turns (notebook fills HK$600 / Red and gold / Luck and wealth / no white), Ask the market (3 offline cards), arrange 4 flowers with meters, storm, reveal, 3-star score card with HK$440 receipt, then __fache.completeTrucks(['jasmine','fong']) + startFinale parade and the final panel. Checked by playing it back in Chromium at 8x.",
+    "video_mp4": null,
+    "recorder_script": "/app/e1_test_reports/videos/record_gameplay.mjs"
+  },
+  "notes": [
+    "2 stale assertions in the checks were updated (not app bugs). harbour-camera-trucks expected the P1 'help Uncle Wing first' lock, which P4 removed (trucks open in any order). research-arrange-meters used the old testid intel-offline-label and now uses intel-panel-label; it counts .intel-card elements because the intel-card-* prefix also matches intel-card-label-*.",
+    "The first run of p3 flagged an 'X-API-Key' string in a third-party injected script. The scan now covers only the app /static/js bundles. The bundle has no YDC_API_KEY, and no ydc/you.com requests were seen.",
+    "The WebSocket ws://localhost:443/ws console errors come from the dev server HMR and are harmless."
+  ],
+  "checks": [
+    {"criterion": "Backend API suite (dialogue, fallback, score, ribbon, P4 dialogue/score)", "name": "backend/e1_tests (8 files)", "lane": "backend", "status": "passed", "evidence": "25 passed in 14.91s"},
+    {"criterion": "P1 core", "name": "start-name-tutorial", "lane": "browser", "status": "passed", "evidence": "5 tutorial lines with Mei/Boss; tutorialDone=true"},
+    {"criterion": "P1 core", "name": "harbour-camera-trucks", "lane": "browser", "status": "passed", "evidence": "1 canvas; Jasmine opens directly (P4); Wing fly 1810ms with Skip"},
+    {"criterion": "P1 core", "name": "talk-llm-notebook-persist", "lane": "browser", "status": "passed", "evidence": "budget 600, red and gold, luck and wealth, no white; max latency 7.5s (within the expected 4s cap + fallback)"},
+    {"criterion": "P1 core", "name": "research-arrange-meters", "lane": "browser", "status": "passed", "evidence": "offline label, 3 cards, 12 shelf metas, white complaint 'funeral at my truck'"},
+    {"criterion": "P1 core", "name": "storm-t8-countdown-swap", "lane": "browser", "status": "passed", "evidence": "T1→T3→T8, peach blown off, countdown >15, sunflower swap kept"},
+    {"criterion": "P1 core", "name": "reveal-score-close-replay", "lane": "browser", "status": "passed", "evidence": "3 stars, 5 score lines, receipt HK$440, truck-stars-wing badge"},
+    {"criterion": "P1 save/resume and fallback", "name": "save-restore-newrun-layout", "lane": "browser", "status": "passed", "evidence": "restore + new run; layout OK at 1366 and 1920"},
+    {"criterion": "P1 save/resume and fallback", "name": "fallback-ui-silent", "lane": "browser", "status": "passed", "evidence": "X-Force-Fallback:1, source=fallback, notebook budget 600, no error text"},
+    {"criterion": "P2 voice and mic fallbacks", "name": "p2-voice-mic-fallbacks", "lane": "browser", "status": "passed", "evidence": "spoken name fills the field + heard-confirm; simulate sends a message; cancel and silence stop listening; denied shows Kit 'No mic? No problem, Boss, just type!'; unsupported disables the button with the title tooltip; no error text"},
+    {"criterion": "P3 market intel fallbacks", "name": "p3-intel-mock-cache-nokey", "lane": "browser", "status": "passed", "evidence": "intel_mock: 3 cards in 3.4s, 'Researched live with You.com', links + badges; repeat ask made 1 /api/intel call; cards saved; no YDC key in the bundle"},
+    {"criterion": "P3 market intel fallbacks", "name": "p4-offline-festival-date", "lane": "browser", "status": "passed", "evidence": "offline festival card Winter Solstice 22 Dec 2026"},
+    {"criterion": "P4 Jasmine, Fong, ribbon, isolation", "name": "p4-trucks-any-order", "lane": "browser", "status": "passed", "evidence": "jasmine, fong, wing all open"},
+    {"criterion": "P4 Jasmine, Fong, ribbon, isolation", "name": "p4-jasmine-fong-talk-notebook", "lane": "browser", "status": "passed", "evidence": "J HK$1500 pink/orange edible; F HK$1000 20th anniversary stand"},
+    {"criterion": "P4 Jasmine, Fong, ribbon, isolation", "name": "p4-taboo-complaints", "lane": "browser", "status": "passed", "evidence": "J chrysanthemums complaint; F strong-scent complaint"},
+    {"criterion": "P4 Jasmine, Fong, ribbon, isolation", "name": "p4-fong-ribbon", "lane": "browser", "status": "passed", "evidence": "live ribbon lines + fallback '二十週年 生意興隆'; Fong 3 stars"},
+    {"criterion": "P4 Jasmine, Fong, ribbon, isolation", "name": "p4-scoring-jasmine-fong", "lane": "browser", "status": "passed", "evidence": "J good 3 stars, taboo 2; F no stand 2, lily 2"},
+    {"criterion": "P4 Jasmine, Fong, ribbon, isolation", "name": "p4-isolation-resume", "lane": "browser", "status": "passed", "evidence": "Fong mid-arrange, completed [wing,jasmine] kept after reload (JRN-83)"},
+    {"criterion": "P4 finale and share", "name": "p4-finale-share", "lane": "browser", "status": "passed", "evidence": "night parade; 3/3/3, 9/9, HK$1575; share PNG 1280x720 816KB; Play again clears the save"},
+    {"criterion": "P5 Meshy fallback, audio, toggles", "name": "p5-audio-toggles-models", "lane": "browser", "status": "passed", "evidence": "empty manifest loads 0 GLBs; audio log pop,alert,tick x5,whoosh,chime + firework; storm ambience on; music/sfx off persists across reload; test-good loaded kit+fong; test-bad loaded kit and failed fong/wing silently; 0 meshy.ai requests"},
+    {"criterion": "P5 polish: skip, load, no-WebGL, demo page", "name": "p5-polish-demo-nowebgl", "lane": "browser", "status": "passed", "evidence": "/demo title 'FA CHE 花車: Gameplay video' + 'Video coming soon'; ?nowebgl=1 shows the exact message; openStallReadyMs 1136"},
+    {"criterion": "P5 polish: skip", "name": "storm-t8-countdown-swap / harbour-camera-trucks / p4-finale-share (skip-cinematic-button)", "lane": "browser", "status": "passed", "evidence": "Skip shown and working for the fly, storm, reveal and parade"},
+    {"criterion": "Ingress path", "name": "harbour-camera-trucks (runs against the preview URL)", "lane": "browser", "status": "passed", "evidence": "preview URL ingress works"}
+  ]
+}

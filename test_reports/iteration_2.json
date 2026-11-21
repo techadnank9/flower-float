@@ -1,0 +1,38 @@
+{
+  "summary": "Phase 2 (voices + mic) tested on backend and frontend, plus a Phase 1 regression. Backend: 31/31 pytest passed (8 new TTS tests and the 23 existing Phase 1 API tests). The ElevenLabs key is invalid (ElevenLabs returns 401), so audio playback for JRN-49/50/51/52/55 is BLOCKED BY KEY and could not be tested. What I could check: the backend logs 'tts elevenlabs call voice=<id> model=eleven_flash_v2_5' with the right voice id for each owner, POST /api/tts returns 204 with X-TTS-Status: error, and /api/tts/stats counts calls and failures. On the client the fallback is silent: the voice log shows text-only, no subtitle, no error UI and no console errors, and the text still shows in the chat log and the 3D bubble. JRN-53, 54, 56, 57, 58, 59, 60, 61, 62, 63 and 64 all PASS. Phase 1 regression PASS: needs and trust filled through the seeded fallback, taboo complaint on white chrysanthemum, arrange, resume after a page refresh (placements kept), storm (T3 banner, countdown, skip), 3-star score card with HK$440 receipt, and Start a new run back to the start screen.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/tts (tts.synthesize)", "issue": "When the 4 s timeout fires, the shielded ElevenLabs task keeps running, but its result is never cached. A late success is thrown away and the next request for the same line calls ElevenLabs again."},
+      {"endpoint": "POST /api/tts", "issue": "Failures are not cached even briefly, so with a bad key every owner line makes a new call that fails with 401. This is fine for correctness but wastes quota and log space."},
+      {"endpoint": "GET /api/", "issue": "Still returns phase: 1 (cosmetic)."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "NameStep MicButton", "issue": "No onCancel handler. If the name mic is cancelled or hits the 8 s silence after interim words, the interim text stays in player-name-input instead of going back to what was there before. The talk Composer handles this correctly.", "selector": "[data-testid=name-mic-button]", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Talk panel composer", "issues": ["The mic button makes the text input narrower, so the placeholder is cut off ('Say something to Uncle Wir…'). Shorten the placeholder or make the panel or input wider."]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_tts_phase2.py", "/app/backend/tests/test_fache_api.py", "/app/test_reports/pytest/pytest_results_phase2.xml"],
+  "action_items": [
+    "Supply a valid ELEVENLABS_API_KEY, then retest audio journeys JRN-49/50/51/52/55 (playback, owner-subtitle, bob, cache hit on repeat).",
+    "Optional: add onCancel to the NameStep MicButton so the box goes back to its earlier value.",
+    "Optional: cache the result of a TTS task that finishes after the timeout; shorten the talk input placeholder."
+  ],
+  "critical_code_review_comments": [
+    "tts.py: the cache write only happens on the awaiting path. Add a done-callback that caches a successful task result, so late results after a timeout are kept.",
+    "The ELEVENLABS_API_KEY is only in the backend process environment (not in backend/.env). Fixed-string search for it found 0 hits in bundle.js, frontend src/public, and all /api response bodies and headers seen during play.",
+    "mic.js: startMic always calls stopVoice (verified: store.speaking goes back to null). Simulated sessions do not request getUserMedia, which is good for CI.",
+    "Test files placed under /app/backend/tests trigger a WatchFiles hot reload of the backend, which resets the in-memory TTS cache and stats. Expect /api/tts/stats to reset to 0."
+  ],
+  "updated_files": ["/app/backend/tests/test_tts_phase2.py"],
+  "success_rate": {"backend": "100% (31/31)", "frontend": "100% of testable Phase 2 journeys (JRN-53..64); JRN-49/50/51/52/55 blocked by invalid key"},
+  "seed_data_creation": "None. The app is stateless apart from browser localStorage; TTS test texts are prefixed TEST_ and only touch the in-memory cache.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "No auth. Run pytest with REACT_APP_BACKEND_URL exported. The key leak test reads ELEVENLABS_API_KEY from the environment; get it from /proc/<uvicorn pid>/environ, because it is not in backend/.env. UI flow: open-stall-button > player-name-input > start-game-button > skip-cinematic-button > mouse click at __fache.project('truck-wing'). In fallback mode these messages fill all needs and trust 4: budget, colours, 'What do you hope the flowers will do?', 'Any flowers you dislike?', 'Who started this truck?', 'Tell me about your father'. The start-arranging-button click needs no_wait_after/force (the panel animates out). A good board is roof kumquat, awning orchid, counter ychrys, bumper bamboo, which scores 3 stars with HK$440. The taboo complaint goes to store.bubble, not to the conversation log. Next: test real audio once a valid key is in place."
+}
