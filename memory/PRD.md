@@ -43,3 +43,13 @@ Phase 1 of 5 (MVP). A fully 3D, story-driven browser game: dress struggling West
 ## Backlog
 - P0: validate ElevenLabs and You.com with real keys (they are masked now); switch DIALOGUE_MODEL to claude-fable-5-2 once the proxy accepts it.
 - P1: Phase 5 per the product docs.
+
+## Phase 5: Meshy characters, sound, polish, demo page (2026-11-21)
+- Build-time Meshy script `backend/scripts/generate_characters.py` (preview → refine → GLB → gltf-transform meshopt/webp ≤2 MB → public/models + manifest.json). Never runs at runtime. With the current masked key it gets a 401 and the manifest stays empty.
+- Runtime GLB loader (`game/models.js`, `scene/Persona.jsx`) loads models after the start screen behind a loading indicator. It falls back to primitives on a missing or bad file. Test manifests: `?models=test-good|test-bad`.
+- All audio is synthesised in code with Web Audio (`game/audio.js`): SFX, storm/harbour ambience, a procedural pentatonic music loop, and ducking under voice lines. Music and SFX toggles are persisted in localStorage. Sources are listed in public/audio/LICENSES.md.
+- Polish: Skip on every cinematic (now including the crowd queue walk), the 3D scene mounts after "Open the stall" is ready (about 1.4–2 s), a WebGL-unavailable message, a perf hook, and per-frame allocations removed from the crowd.
+- /demo gameplay video page ("Video coming soon" until public/demo/fa-che-gameplay.mp4 exists).
+- Tests: iteration_5, all Phase 5 journeys plus the JRN-83 and ribbon regressions pass.
+## Backlog
+- P0: generate the GLBs once a real MESHY_API_KEY is saved; validate ElevenLabs and You.com with real keys; add the gameplay mp4.
