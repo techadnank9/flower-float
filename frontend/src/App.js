@@ -2,6 +2,7 @@ import "@/App.css";
 import { Component, useState } from "react";
 import World from "./scene/World";
 import HUD from "./hud/HUD";
+import DemoPage from "./demo/DemoPage";
 
 const NO_3D = "Your browser can't run 3D. Try Chrome on a laptop.";
 
@@ -26,7 +27,13 @@ const NoWebGL = () => (
   </div>
 );
 
+const isDemo = () => /^\/demo\/?$/.test(window.location.pathname);
+
 export default function App() {
+  return isDemo() ? <DemoPage /> : <Game />;
+}
+
+function Game() {
   const [ok, setOk] = useState(hasWebGL);
   if (!ok) return <NoWebGL />;
   return (
